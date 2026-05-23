@@ -2,13 +2,14 @@ import express from 'express'
 import mongoose from 'mongoose'
 import cors from 'cors'
 import dotenv from 'dotenv'
+import authRoutes from './routes/authRoutes.js'
 
 dotenv.config()
 
 const app = express()
 const PORT = process.env.PORT || 5000
 
-// ── Middleware ──────────────────────────────────────
+//  Middleware 
 app.use(cors({
   origin: process.env.CLIENT_URL,
   credentials: true
@@ -16,20 +17,20 @@ app.use(cors({
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
-// ── DB Connection ───────────────────────────────────
+// DB Connection 
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('MongoDB connected'))
   .catch((err) => console.error('MongoDB error:', err))
 
-// ── Health Check ────────────────────────────────────
+//  Health Check 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'Build2Hire API is running' })
 })
 
-// ── Routes ──────────────────────────────────────────
-// will be added here as we build each module
+//  Routes
+app.use('/api/auth', authRoutes) 
 
-// ── Global Error Handler ────────────────────────────
+// Global Error Handler 
 app.use((err, req, res, next) => {
   console.error(err.stack)
   res.status(err.status || 500).json({
@@ -38,7 +39,7 @@ app.use((err, req, res, next) => {
   })
 })
 
-// ── Start Server ────────────────────────────────────
+// Start Server 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
