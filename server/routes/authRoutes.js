@@ -4,14 +4,13 @@ import { authenticate } from '../middleware/authenticate.js'
 
 const router = express.Router()
 
-// @route   POST /api/auth/register
+//  POST /api/auth/register
 router.post('/register', register)
 
-// @route   POST /api/auth/login
+// POST /api/auth/login
 router.post('/login', login)
 
-// @route   POST /api/auth/logout
-// Requires authentication
+// POST /api/auth/logout
 router.post('/logout', authenticate, logout)
 
 export default router

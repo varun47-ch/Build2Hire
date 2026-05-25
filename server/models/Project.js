@@ -24,7 +24,7 @@ const projectSchema = new mongoose.Schema({
   
   projectType: {
     type: String,
-    enum: ['hackathon', 'finalyear', 'startup'],
+    enum: ['Hackathon', 'Finalyear-Project', 'Startup'],
     required: true
   },
   

@@ -11,22 +11,26 @@ const generateToken = (userId) => {
   )
 }
 
-// @desc    Register new user
-// @route   POST /api/auth/register
-// @access  Public
+// Register new user
+
 export const register = async (req, res) => {
   try {
     const { name, email, password, role } = req.body
+
+      if (!password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password is required'
+      })
+    }
     
-    // Validate password length (before hashing)
     if (password && password.length < 8) {
       return res.status(400).json({
         success: false,
         message: 'Password must be at least 8 characters'
       })
     }
-    
-    // Check if user exists
+
     const existingUser = await User.findOne({ email })
     if (existingUser) {
       return res.status(409).json({
@@ -38,7 +42,6 @@ export const register = async (req, res) => {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12)
     
-    // Create user
     const user = await User.create({
       name,
       email,
@@ -46,10 +49,8 @@ export const register = async (req, res) => {
       role
     })
     
-    // Generate token
     const token = generateToken(user._id)
-    
-    // Send response
+
     res.status(201).json({
       success: true,
       token,
@@ -62,7 +63,6 @@ export const register = async (req, res) => {
     })
     
   } catch (error) {
-    // Handle duplicate key error (email unique constraint)
     if (error.code === 11000) {
       return res.status(409).json({
         success: false,
@@ -77,14 +77,10 @@ export const register = async (req, res) => {
   }
 }
 
-// @desc    Login user
-// @route   POST /api/auth/login
-// @access  Public
+// Login user
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body
-    
-    // Find user
     const user = await User.findOne({ email })
     if (!user) {
       return res.status(401).json({
@@ -92,8 +88,7 @@ export const login = async (req, res) => {
         message: 'Invalid credentials'
       })
     }
-    
-    // Check if account is active
+
     if (!user.isActive) {
       return res.status(403).json({
         success: false,
@@ -101,7 +96,6 @@ export const login = async (req, res) => {
       })
     }
     
-    // Verify password
     const isPasswordValid = await bcrypt.compare(password, user.password)
     if (!isPasswordValid) {
       return res.status(401).json({
@@ -110,10 +104,8 @@ export const login = async (req, res) => {
       })
     }
     
-    // Generate token
     const token = generateToken(user._id)
-    
-    // Send response
+
     res.status(200).json({
       success: true,
       token,
@@ -132,13 +124,8 @@ export const login = async (req, res) => {
     })
   }
 }
-
-// @desc    Logout user
-// @route   POST /api/auth/logout
-// @access  Private
+//Logout user
 export const logout = async (req, res) => {
-  // With JWT, logout is handled client-side by removing token
-  // Server just confirms the action
   res.status(200).json({
     success: true,
     message: 'Logged out successfully'

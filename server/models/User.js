@@ -23,14 +23,13 @@ const userSchema = new mongoose.Schema({
   
   password: {
     type: String,
-    minlength: 8,
-    required: true
-
+    minlength: 8
+    
   },
   
   role: {
     type: String,
-    enum: ['student', 'hr', 'admin'],
+    enum: ['Student', 'Hr', 'Admin'],
     required: true
   },
   
@@ -38,6 +37,17 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
+  
+  
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
+  
+  avatar: {
+    type: String  
+  }
   
 }, { timestamps: true })
 
