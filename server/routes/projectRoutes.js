@@ -10,6 +10,10 @@ import {
   updateProjectStatus,
   deleteProject
 } from '../controllers/projectController.js'
+import { 
+  createJoinRequest, 
+  updateJoinRequest 
+} from '../controllers/joinRequestController.js'
 import { authenticate } from '../middleware/authenticate.js'
 import { authorizeRole } from '../middleware/authorizeRole.js'
 
@@ -32,5 +36,24 @@ router.get('/:id/team', authenticate, authorizeRole('Hr'), getProjectTeam)
 
 //Admin & Student
 router.delete('/:id', authenticate, authorizeRole('Student', 'Admin'), deleteProject)
+
+// Join request routes - nested under projects
+router.get('/:id/join-requests', 
+  authenticate, 
+  authorizeRole('Student'), 
+  getProjectJoinRequests
+)
+
+router.post('/:id/join-requests', 
+  authenticate, 
+  authorizeRole('Student'), 
+  createJoinRequest
+)
+
+router.patch('/:id/join-requests/:requestId', 
+  authenticate, 
+  authorizeRole('Student'), 
+  updateJoinRequest
+)
 
 export default router

@@ -5,6 +5,7 @@ import dotenv from 'dotenv'
 import authRoutes from './routes/authRoutes.js'
 import projectRoutes from './routes/projectRoutes.js'
 import profileRoutes from './routes/profileRoutes.js'
+import myRequestsRoutes from './routes/myRequestsRoutes.js'
 
 dotenv.config()
 
@@ -33,6 +34,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes)
 app.use('/api/projects', projectRoutes) 
 app.use('/api/profile', profileRoutes)
+app.use('/api/my-requests', myRequestsRoutes)
 
 // Global Error Handler 
 app.use((err, req, res, next) => {
