@@ -305,7 +305,7 @@ export const deleteProject = async (req, res) => {
     
     // Check if user is creator OR admin
     const isCreator = project.createdBy.toString() === req.user._id.toString()
-    const isAdmin = req.user.role === 'admin'
+    const isAdmin = req.user.role === 'Admin'
     
     if (!isCreator && !isAdmin) {
       return res.status(403).json({
