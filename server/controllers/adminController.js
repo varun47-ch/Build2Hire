@@ -1,8 +1,6 @@
 import User from '../models/User.js'
 
-// @desc    Get all users
-// @route   GET /api/users
-// @access  Private (Admin)
+//  Get all users
 export const getAllUsers = async (req, res) => {
   try {
     const { role, page = 1, limit = 10 } = req.query
@@ -21,6 +19,7 @@ export const getAllUsers = async (req, res) => {
     const total = await User.countDocuments(filter)
     
     const formattedUsers = users.map(user => ({
+      _id: user._id,
       id: user._id,
       name: user.name,
       email: user.email,
@@ -49,9 +48,8 @@ export const getAllUsers = async (req, res) => {
   }
 }
 
-// @desc    Get specific user
-// @route   GET /api/users/:id
-// @access  Private (Admin)
+// GET /api/users/:id
+
 export const getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select('-password')
@@ -66,6 +64,7 @@ export const getUserById = async (req, res) => {
     res.status(200).json({
       success: true,
       data: {
+        _id: user._id,
         id: user._id,
         name: user.name,
         email: user.email,
@@ -84,9 +83,7 @@ export const getUserById = async (req, res) => {
   }
 }
 
-// @desc    Update user status (activate/deactivate)
-// @route   PATCH /api/users/:id/status
-// @access  Private (Admin)
+//Update user status (activate/deactivate)
 export const updateUserStatus = async (req, res) => {
   try {
     const { isActive } = req.body
@@ -115,6 +112,7 @@ export const updateUserStatus = async (req, res) => {
       success: true,
       message: `User ${isActive ? 'activated' : 'deactivated'} successfully`,
       data: {
+        _id: user._id,
         id: user._id,
         name: user.name,
         email: user.email,
