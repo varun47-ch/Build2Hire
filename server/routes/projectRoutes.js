@@ -12,7 +12,8 @@ import {
 } from '../controllers/projectController.js'
 import { 
   createJoinRequest, 
-  updateJoinRequest 
+  updateJoinRequest,
+  getProjectRequests
 } from '../controllers/joinRequestController.js'
 import { authenticate } from '../middleware/authenticate.js'
 import { authorizeRole } from '../middleware/authorizeRole.js'
@@ -27,7 +28,6 @@ router.get('/:id', getProjectById)
 
 // Student routes
 router.post('/', authenticate, authorizeRole('Student'), createProject)
-router.get('/:id/join-requests', authenticate, authorizeRole('Student'), getProjectJoinRequests)
 router.patch('/:id', authenticate, authorizeRole('Student'), updateProject)
 router.patch('/:id/status', authenticate, authorizeRole('Student'), updateProjectStatus)
 
@@ -40,8 +40,7 @@ router.delete('/:id', authenticate, authorizeRole('Student', 'Admin'), deletePro
 // Join request routes - nested under projects
 router.get('/:id/join-requests', 
   authenticate, 
-  authorizeRole('Student'), 
-  getProjectJoinRequests
+  getProjectRequests
 )
 
 router.post('/:id/join-requests', 
@@ -52,7 +51,6 @@ router.post('/:id/join-requests',
 
 router.patch('/:id/join-requests/:requestId', 
   authenticate, 
-  authorizeRole('Student'), 
   updateJoinRequest
 )
 
