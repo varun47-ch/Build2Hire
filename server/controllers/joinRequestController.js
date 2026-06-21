@@ -1,7 +1,45 @@
+
 import JoinRequest from '../models/JoinRequest.js'
 import Project from '../models/Project.js'
 
-//Send join request to a project
+export const getProjectRequests = async (req, res) => {
+  try {
+    const projectId = req.params.id
+
+    const project = await Project.findById(projectId)
+    
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        message: 'Project not found'
+      })
+    }
+
+    if (project.createdBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Only project head can view requests'
+      })
+    }
+
+    const requests = await JoinRequest.find({ projectId })
+      .populate('requestedBy', 'name email')
+      .populate('projectId', 'title')
+      .sort({ createdAt: -1 })
+
+    res.status(200).json({
+      success: true,
+      data: requests
+    })
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    })
+  }
+}
+
+
 export const createJoinRequest = async (req, res) => {
   try {
     const { role } = req.body
@@ -82,7 +120,6 @@ export const createJoinRequest = async (req, res) => {
   }
 }
 
-// Accept or reject join request
 export const updateJoinRequest = async (req, res) => {
   try {
     const { status } = req.body
@@ -104,7 +141,6 @@ export const updateJoinRequest = async (req, res) => {
       })
     }
     
-
     const project = await Project.findById(joinRequest.projectId)
     
     if (!project) {
@@ -159,7 +195,6 @@ export const updateJoinRequest = async (req, res) => {
   }
 }
 
-//Get user's own sent join request
 export const getMyRequests = async (req, res) => {
   try {
     const requests = await JoinRequest.find({ requestedBy: req.user._id })
