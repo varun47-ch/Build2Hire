@@ -33,6 +33,7 @@ const ProjectDetailPage = () => {
   const [joined, setJoined] = useState(false)
   const [statusLoading, setStatusLoading] = useState(false)
   const [statusError, setStatusError] = useState(null)
+  const [successMessage, setSuccessMessage] = useState(null)
   const [deleteModal, setDeleteModal] = useState({
     isOpen: false,
     isDeleting: false
@@ -74,15 +75,12 @@ const ProjectDetailPage = () => {
   }
 
   const handleStatusChange = async (newStatus) => {
-    if (!window.confirm(`Mark project as "${newStatus}"?`)) {
-      return
-    }
-
     setStatusLoading(true)
     setStatusError(null)
+    setSuccessMessage(null)
 
     try {
-      const response = await projectAPI.update(id, {
+      const response = await projectAPI.updateStatus(id, {
         status: newStatus
       })
 
@@ -91,7 +89,8 @@ const ProjectDetailPage = () => {
           ...prev,
           status: newStatus
         }))
-        alert(`Project marked as ${newStatus}!`)
+        setSuccessMessage(`✓ Project marked as ${newStatus}!`)
+        setTimeout(() => setSuccessMessage(null), 3000)
       }
     } catch (err) {
       setStatusError(err.response?.data?.message || 'Failed to update status')
@@ -107,12 +106,11 @@ const ProjectDetailPage = () => {
       const response = await projectAPI.delete(id)
 
       if (response.data.success) {
-        alert('Project deleted successfully!')
-        navigate('/student-dashboard')
+        setSuccessMessage('✓ Project deleted successfully!')
+        setTimeout(() => navigate('/student-dashboard'), 1500)
       }
     } catch (err) {
-      alert('Failed to delete project: ' + (err.response?.data?.message || 'Unknown error'))
-    } finally {
+      setStatusError(err.response?.data?.message || 'Failed to delete project')
       setDeleteModal(prev => ({ ...prev, isDeleting: false }))
     }
   }
@@ -227,6 +225,14 @@ const ProjectDetailPage = () => {
           </div>
 
           <div className="p-8 space-y-8">
+            {/* Success Message */}
+            {successMessage && (
+              <div className="p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3 animate-in">
+                <CheckCircle2 size={20} className="text-green-600 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-green-800 font-medium">{successMessage}</p>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="flex items-start gap-3">
                 <Calendar
@@ -307,7 +313,6 @@ const ProjectDetailPage = () => {
                   <h2 className="text-2xl font-bold text-slate-900">Repository</h2>
                 </div>
                 <a
-                
                   href={project.githubUrl}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -560,7 +565,7 @@ const ProjectDetailPage = () => {
         </div>
       </div>
 
-      {/* Delete Modal */}
+      {/* Delete Confirmation Modal */}
       {deleteModal.isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl shadow-xl max-w-sm w-full">
@@ -568,7 +573,8 @@ const ProjectDetailPage = () => {
               <h2 className="text-xl font-bold text-slate-900">Delete Project</h2>
               <button
                 onClick={closeDeleteModal}
-                className="p-1 hover:bg-slate-100 rounded-lg transition"
+                disabled={deleteModal.isDeleting}
+                className="p-1 hover:bg-slate-100 rounded-lg transition disabled:opacity-50"
               >
                 <X size={20} />
               </button>
