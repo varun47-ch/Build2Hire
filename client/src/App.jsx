@@ -1,121 +1,98 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider } from './context/AuthContext'
+import Navigation from './components/Navigation'
+
+import LoginPage from './pages/LoginPage'
+import RegisterPage from './pages/RegisterPage'
+import ProjectsPage from './pages/ProjectsPage'
+import ProjectDetailPage from './pages/ProjectDetailPage'
+import CreateProjectPage from './pages/CreateProjectPage'
+import MyRequestsPage from './pages/MyRequestsPage'
+import ProjectRequestsPage from './pages/ProjectRequestsPage'
+import StudentDashboardPage from './pages/StudentDashboardPage'
+import PrivateRoute from './components/PrivateRoute'
+import EditProjectPage from './pages/EditProjectPage'
+import HRDashboardPage from './pages/HRDashboardPage'
+import AdminDashboardPage from './pages/AdminDashboardPage'
+import CompanyRegistrationPage from './pages/CompanyRegistrationPage'
+
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <BrowserRouter>
+      <AuthProvider>
+        <Navigation />
+        <main>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
 
-      <div className="ticks"></div>
+            {/* Project Routes */}
+            <Route path="/projects" element={<ProjectsPage />} />
+            <Route path="/projects/:id" element={<ProjectDetailPage />} />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+            {/* Protected Routes */}
+            <Route
+              path="/student-dashboard"
+              element={
+                <PrivateRoute>
+                  <StudentDashboardPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/my-requests"
+              element={
+                <PrivateRoute>
+                  <MyRequestsPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/projects/:projectId/requests"
+              element={
+                <PrivateRoute>
+                  <ProjectRequestsPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/create-project"
+              element={
+                <PrivateRoute>
+                  <CreateProjectPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/edit-project/:id"
+              element={
+                <PrivateRoute>
+                  <EditProjectPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/hr-dashboard"
+              element={
+                <PrivateRoute>
+                  <HRDashboardPage />
+                </PrivateRoute>
+              }
+            />
+            <Route 
+              path="/admin-dashboard" 
+              element={<PrivateRoute><AdminDashboardPage /></PrivateRoute>} 
+            />
+            <Route path="/register-company" element={<CompanyRegistrationPage />} />
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+            {/* Default Route */}
+            <Route path="/" element={<Navigate to="/projects" replace />} />
+          </Routes>
+        </main>
+      </AuthProvider>
+    </BrowserRouter>
   )
 }
 
