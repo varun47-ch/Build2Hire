@@ -30,7 +30,13 @@ function App() {
 
             {/* Project Routes */}
             <Route path="/projects" element={<ProjectsPage />} />
-            <Route path="/projects/:id" element={<ProjectDetailPage />} />
+
+            <Route
+             path="/projects/:id"
+              element={
+              <PrivateRoute>
+                <ProjectDetailPage />
+              </PrivateRoute>} />
 
             {/* Protected Routes */}
             <Route
