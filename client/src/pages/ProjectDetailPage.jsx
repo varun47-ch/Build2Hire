@@ -26,7 +26,6 @@ const ProjectDetailPage = () => {
   const navigate = useNavigate()
   const { user, isAuth } = useAuth()
 
-  // State management
   const [state, setState] = useState({
     project: null,
     loading: true,
@@ -207,6 +206,7 @@ const ProjectDetailPage = () => {
             {state.project.groupLink && (
               <GroupCommunicationSection
                 project={state.project}
+                user={user}
                 joined={state.joined}
                 isProjectHead={isProjectHead}
                 onJoinClick={() => toggleJoinModal(true)}
@@ -233,7 +233,6 @@ const ProjectDetailPage = () => {
             )}
           </div>
 
-          {/* Footer */}
           <ProjectFooter
             isProjectHead={isProjectHead}
             joined={state.joined}
@@ -247,7 +246,6 @@ const ProjectDetailPage = () => {
         </div>
       </div>
 
-      {/* Modals */}
       {state.deleteModal.isOpen && (
         <DeleteConfirmationModal
           project={state.project}
@@ -456,8 +454,10 @@ const RepositorySection = ({ url }) => {
   )
 }
 
-const GroupCommunicationSection = ({ project, joined, isProjectHead, onJoinClick }) => {
-  if (joined || isProjectHead) {
+const GroupCommunicationSection = ({ project, user, joined, isProjectHead, onJoinClick }) => {
+  const canAccessGroup = joined || isProjectHead || user?.role === 'Hr' || user?.role === 'Admin'
+
+  if (canAccessGroup) {
     return (
       <div className="border-t border-slate-200 pt-8">
         <div className="flex items-center gap-3 mb-6">
@@ -491,13 +491,16 @@ const GroupCommunicationSection = ({ project, joined, isProjectHead, onJoinClick
 
           <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
             <p className="text-xs text-green-700">
+              ✅ You can access the team communication group
+              {user?.role === 'Hr' && ' (HR Access)'}
+              {user?.role === 'Admin' && ' (Admin Access)'}
             </p>
           </div>
         </div>
       </div>
     )
   }
-
+  
   return (
     <div className="border-t border-slate-200 pt-8">
       <div className="bg-slate-50 rounded-xl border border-slate-200 p-6">
@@ -510,8 +513,7 @@ const GroupCommunicationSection = ({ project, joined, isProjectHead, onJoinClick
               </p>
             </div>
             <p className="text-slate-600 text-sm mb-4">
-              The project head has set up a <span className="font-semibold capitalize">{project.groupType}</span> group for team communication. 
-              Send a join request and wait for approval to access the group link.
+              The project head has set up a <span className="font-semibold capitalize">{project.groupType}</span> group for team communication. Send a join request and wait for approval to access the group link.
             </p>
           </div>
         </div>

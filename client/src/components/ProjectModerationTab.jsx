@@ -59,7 +59,6 @@ const ProjectModerationTab = () => {
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load projects')
-      console.error('Fetch projects error:', err)
     } finally {
       setLoading(false)
     }
@@ -88,7 +87,7 @@ const ProjectModerationTab = () => {
     })
   }
 
-  //  DELETE PROJECT 
+  // DELETE PROJECT
   const handleDeleteClick = (project) => {
     setDeleteModal({
       isOpen: true,
@@ -113,7 +112,6 @@ const ProjectModerationTab = () => {
       })
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to delete project')
-      console.error('Delete project error:', err)
     } finally {
       setDeletingId(null)
     }
@@ -382,7 +380,7 @@ const ProjectModerationTab = () => {
         )}
       </div>
 
-      {/* VIEW PROJECT MODAL - FIXED */}
+      {/* VIEW PROJECT MODAL */}
       {viewModal.isOpen && viewModal.project && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
           <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full my-8">
@@ -462,7 +460,7 @@ const ProjectModerationTab = () => {
                 </a>
               </div>
 
-              {/* ✅ NEW: Group Communication */}
+              {/* Group Communication */}
               {viewModal.project.groupLink && (
                 <div>
                   <h4 className="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
@@ -541,27 +539,32 @@ const ProjectModerationTab = () => {
                 </div>
               )}
 
-              {/* Team Members */}
-              {viewModal.project.members && viewModal.project.members.length > 0 && (
+              {/* Team Members - FIXED */}
+              {viewModal.project.members && Array.isArray(viewModal.project.members) && viewModal.project.members.length > 0 && (
                 <div>
                   <h4 className="text-sm font-semibold text-slate-700 mb-3">
                     Team Members ({viewModal.project.members.length})
                   </h4>
                   <div className="space-y-2 max-h-48 overflow-y-auto">
-                    {viewModal.project.members.map((member, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200"
-                      >
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center font-bold text-white flex-shrink-0">
-                          {(member.name || 'U').charAt(0).toUpperCase()}
+                    {viewModal.project.members.map((member, idx) => {
+                      const memberName = typeof member === 'string' ? 'Team Member' : (member.name || 'Unknown')
+                      const memberEmail = typeof member === 'string' ? 'ID: ' + member : (member.email || 'No email')
+                      
+                      return (
+                        <div
+                          key={idx}
+                          className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200"
+                        >
+                          <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center font-bold text-white flex-shrink-0">
+                            {(memberName || 'U').charAt(0).toUpperCase()}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-slate-900 truncate">{memberName}</p>
+                            <p className="text-xs text-slate-600 truncate">{memberEmail}</p>
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-slate-900">{member.name}</p>
-                          <p className="text-xs text-slate-600 truncate">{member.email}</p>
-                        </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 </div>
               )}
