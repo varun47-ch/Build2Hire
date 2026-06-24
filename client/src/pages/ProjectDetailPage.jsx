@@ -491,7 +491,6 @@ const GroupCommunicationSection = ({ project, joined, isProjectHead, onJoinClick
 
           <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
             <p className="text-xs text-green-700">
-              ✅ You are a member of this project and can access the team communication group
             </p>
           </div>
         </div>

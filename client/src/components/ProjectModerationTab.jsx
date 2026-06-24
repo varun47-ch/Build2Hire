@@ -14,7 +14,8 @@ import {
   Briefcase,
   Calendar,
   Code,
-  User
+  User,
+  MessageCircle
 } from 'lucide-react'
 
 const ProjectModerationTab = () => {
@@ -381,9 +382,11 @@ const ProjectModerationTab = () => {
         )}
       </div>
 
+      {/* VIEW PROJECT MODAL - FIXED */}
       {viewModal.isOpen && viewModal.project && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-screen overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full my-8">
+            {/* Modal Header */}
             <div className="sticky top-0 flex items-center justify-between p-6 border-b border-slate-200 bg-gradient-to-r from-blue-50 to-slate-50">
               <h2 className="text-2xl font-bold text-slate-900">Project Details</h2>
               <button
@@ -394,7 +397,8 @@ const ProjectModerationTab = () => {
               </button>
             </div>
 
-            <div className="p-6 space-y-6">
+            {/* Modal Content */}
+            <div className="p-6 space-y-6 max-h-[calc(100vh-250px)] overflow-y-auto">
               {/* Title & Badges */}
               <div>
                 <h3 className="text-2xl font-bold text-slate-900 mb-3">
@@ -422,8 +426,8 @@ const ProjectModerationTab = () => {
 
               {/* Creator Info */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm text-blue-700 font-semibold mb-2">
-                  <User size={14} className="inline mr-2" />
+                <p className="text-sm text-blue-700 font-semibold mb-2 flex items-center gap-2">
+                  <User size={14} />
                   Created by
                 </p>
                 <p className="text-lg font-bold text-slate-900">
@@ -436,9 +440,7 @@ const ProjectModerationTab = () => {
 
               {/* Description */}
               <div>
-                <h4 className="text-sm font-semibold text-slate-700 mb-2">
-                  Description
-                </h4>
+                <h4 className="text-sm font-semibold text-slate-700 mb-2">Description</h4>
                 <p className="text-slate-700 leading-relaxed bg-slate-50 rounded-lg p-4">
                   {viewModal.project.description}
                 </p>
@@ -454,11 +456,34 @@ const ProjectModerationTab = () => {
                   href={viewModal.project.githubUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-700 font-medium break-all"
+                  className="text-blue-600 hover:text-blue-700 font-medium break-all inline-block"
                 >
                   {viewModal.project.githubUrl}
                 </a>
               </div>
+
+              {/* ✅ NEW: Group Communication */}
+              {viewModal.project.groupLink && (
+                <div>
+                  <h4 className="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
+                    <MessageCircle size={16} />
+                    Team Communication
+                  </h4>
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <p className="text-sm text-green-700 mb-2">
+                      <span className="font-semibold">Group Type:</span> {viewModal.project.groupType || 'WhatsApp'}
+                    </p>
+                    <a
+                      href={viewModal.project.groupLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-700 font-medium break-all inline-block"
+                    >
+                      {viewModal.project.groupLink}
+                    </a>
+                  </div>
+                </div>
+              )}
 
               {/* Key Metrics */}
               <div className="grid grid-cols-2 gap-4">
@@ -485,9 +510,7 @@ const ProjectModerationTab = () => {
               {/* Skills */}
               {viewModal.project.skills && viewModal.project.skills.length > 0 && (
                 <div>
-                  <h4 className="text-sm font-semibold text-slate-700 mb-3">
-                    Required Skills
-                  </h4>
+                  <h4 className="text-sm font-semibold text-slate-700 mb-3">Required Skills</h4>
                   <div className="flex flex-wrap gap-2">
                     {viewModal.project.skills.map((skill, idx) => (
                       <span
@@ -504,9 +527,7 @@ const ProjectModerationTab = () => {
               {/* Roles Needed */}
               {viewModal.project.rolesNeeded && viewModal.project.rolesNeeded.length > 0 && (
                 <div>
-                  <h4 className="text-sm font-semibold text-slate-700 mb-3">
-                    Roles Needed
-                  </h4>
+                  <h4 className="text-sm font-semibold text-slate-700 mb-3">Roles Needed</h4>
                   <div className="flex flex-wrap gap-2">
                     {viewModal.project.rolesNeeded.map((role, idx) => (
                       <span
@@ -521,48 +542,45 @@ const ProjectModerationTab = () => {
               )}
 
               {/* Team Members */}
-              {viewModal.project.members.length > 0 && (
+              {viewModal.project.members && viewModal.project.members.length > 0 && (
                 <div>
                   <h4 className="text-sm font-semibold text-slate-700 mb-3">
                     Team Members ({viewModal.project.members.length})
                   </h4>
-                  <div className="space-y-2">
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
                     {viewModal.project.members.map((member, idx) => (
                       <div
                         key={idx}
                         className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200"
                       >
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center font-bold text-white">
-                          {member.name.charAt(0).toUpperCase()}
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center font-bold text-white flex-shrink-0">
+                          {(member.name || 'U').charAt(0).toUpperCase()}
                         </div>
-                        <div>
-                          <p className="font-medium text-slate-900">
-                            {member.name}
-                          </p>
-                          <p className="text-xs text-slate-600">
-                            {member.email}
-                          </p>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-slate-900">{member.name}</p>
+                          <p className="text-xs text-slate-600 truncate">{member.email}</p>
                         </div>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
+            </div>
 
-              {/* Close Button */}
-              <div className="border-t border-slate-200 pt-6">
-                <button
-                  onClick={() => setViewModal({ isOpen: false, project: null })}
-                  className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold"
-                >
-                  Close
-                </button>
-              </div>
+            {/* Modal Footer */}
+            <div className="border-t border-slate-200 p-6 bg-slate-50 flex gap-3">
+              <button
+                onClick={() => setViewModal({ isOpen: false, project: null })}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold text-sm"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
       )}
 
+      {/* DELETE PROJECT MODAL */}
       {deleteModal.isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full">
