@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { projectAPI } from '../services/api'
-import { ArrowLeft, AlertCircle, Loader, X } from 'lucide-react'
+import { ArrowLeft, AlertCircle, Loader, X, MessageCircle } from 'lucide-react'
 
 const EditProjectPage = () => {
   const { id } = useParams()
@@ -51,13 +51,14 @@ const EditProjectPage = () => {
     setSubmitting(true)
 
     try {
-      // Only send editable fields
       const updateData = {
         title: formData.title,
         description: formData.description,
         githubUrl: formData.githubUrl,
         skills: formData.skills,
-        rolesNeeded: formData.rolesNeeded
+        rolesNeeded: formData.rolesNeeded,
+        groupLink: formData.groupLink,      
+        groupType: formData.groupType       
       }
 
       const response = await projectAPI.update(id, updateData)
@@ -167,7 +168,9 @@ const EditProjectForm = ({ initialData, onSubmit, isSubmitting }) => {
     projectType: initialData.projectType || 'Hackathon',
     status: initialData.status || 'recruiting',
     skills: initialData.skills || [],
-    rolesNeeded: initialData.rolesNeeded || []
+    rolesNeeded: initialData.rolesNeeded || [],
+    groupLink: initialData.groupLink || '',        
+    groupType: initialData.groupType || 'whatsapp' 
   })
 
   const [skillInput, setSkillInput] = useState('')
@@ -184,6 +187,15 @@ const EditProjectForm = ({ initialData, onSubmit, isSubmitting }) => {
   }
 
   const roles = ['frontend', 'backend', 'ml', 'designer', 'devops', 'other']
+
+  const groupTypes = [
+    { value: 'whatsapp', label: 'WhatsApp' },
+    { value: 'discord', label: 'Discord' },
+    { value: 'telegram', label: 'Telegram' },
+    { value: 'reddit', label: 'Reddit' },
+    { value: 'slack', label: 'Slack' },
+    { value: 'other', label: 'Other' }
+  ]
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -291,6 +303,23 @@ const EditProjectForm = ({ initialData, onSubmit, isSubmitting }) => {
       return false
     }
 
+    if (!formData.groupLink.trim()) {
+      setError('Group link is required')
+      return false
+    }
+
+    try {
+      new URL(formData.groupLink)
+    } catch (err) {
+      setError('Please enter a valid group link URL')
+      return false
+    }
+
+    if (!formData.groupType) {
+      setError('Group type is required')
+      return false
+    }
+
     if (formData.skills.length === 0) {
       setError('At least one skill is required')
       return false
@@ -382,6 +411,46 @@ const EditProjectForm = ({ initialData, onSubmit, isSubmitting }) => {
           disabled={isSubmitting}
           className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:bg-slate-100 text-sm"
         />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label htmlFor="groupType" className="block text-sm font-medium text-slate-700 mb-2">
+            Communication Group Type <span className="text-red-600">*</span>
+          </label>
+          <select
+            id="groupType"
+            name="groupType"
+            value={formData.groupType}
+            onChange={handleChange}
+            disabled={isSubmitting}
+            className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:bg-slate-100 text-sm"
+          >
+            <option value="">Select group type</option>
+            {groupTypes.map(type => (
+              <option key={type.value} value={type.value}>
+                {type.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Group Link */}
+        <div>
+          <label htmlFor="groupLink" className="block text-sm font-medium text-slate-700 mb-2">
+            Group Link <span className="text-red-600">*</span>
+          </label>
+          <input
+            id="groupLink"
+            type="url"
+            name="groupLink"
+            value={formData.groupLink}
+            onChange={handleChange}
+            placeholder="https://chat.whatsapp.com/... or https://discord.gg/..."
+            disabled={isSubmitting}
+            className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:bg-slate-100 text-sm"
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -506,17 +575,15 @@ const EditProjectForm = ({ initialData, onSubmit, isSubmitting }) => {
         </p>
       </div>
 
-      {/* Info Box */}
       <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
         <p className="text-sm text-blue-900">
-          <span className="font-semibold">Editable:</span> Title, Description, GitHub URL, Skills, Roles
+          <span className="font-semibold">Editable:</span> Title, Description, GitHub URL, Group Link, Group Type, Skills, Roles
         </p>
         <p className="text-sm text-blue-900 mt-1">
           <span className="font-semibold">Read-only:</span> Project Type, Status
         </p>
       </div>
 
-      {/* Submit Button */}
       <button
         type="submit"
         disabled={isSubmitting}

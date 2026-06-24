@@ -33,8 +33,16 @@ export const projectAPI = {
   getMyProjects: () => api.get('/projects/my-projects'),  
   getTeam: (id) => api.get(`/projects/${id}/team`),  
   getJoinRequests: (id) => api.get(`/projects/${id}/join-requests`),  
-  create: (data) => api.post('/projects', data),
-  update: (id, data) => api.patch(`/projects/${id}`, data),
+  create: (data) => api.post('/projects', {
+  ...data,
+  groupLink: data.groupLink,
+  groupType: data.groupType || 'whatsapp'
+}),
+update: (id, data) => api.patch(`/projects/${id}`, {
+  ...data,
+  groupLink: data.groupLink,
+  groupType: data.groupType || 'whatsapp'
+}),
   updateStatus: (id, data) => api.patch(`/projects/${id}/status`, data), 
   delete: (id) => api.delete(`/projects/${id}`)
 }

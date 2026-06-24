@@ -60,6 +60,22 @@ const projectSchema = new mongoose.Schema({
     type: String,
     enum: ['recruiting', 'in-progress', 'completed'],
     default: 'recruiting'
+  },
+  groupLink: {
+    type: String,
+    required: [true, 'Group link is required'],
+    trim: true,
+    match: [
+      /^https?:\/\/.+/,
+      'Please provide a valid group link URL (e.g., https://chat.whatsapp.com/... or https://discord.gg/...)'
+    ]
+  },
+  
+  groupType: {
+    type: String,
+    enum: ['whatsapp', 'discord', 'telegram', 'reddit', 'slack', 'other'],
+    required: [true, 'Group type is required'],
+    default: 'whatsapp'
   }
   
 }, { timestamps: true })

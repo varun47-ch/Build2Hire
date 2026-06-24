@@ -16,7 +16,8 @@ import {
   Trash2,
   X,
   Code,
-  Briefcase
+  Briefcase,
+  Lock
 } from 'lucide-react'
 import JoinRequestModal from '../components/JoinRequestModal'
 
@@ -40,7 +41,6 @@ const ProjectDetailPage = () => {
     deleteModal: { isOpen: false, isDeleting: false }
   })
 
-  // Verify HR company registration
   useEffect(() => {
     if (isAuth && user?.role === 'Hr') {
       verifyCompanyRegistration()
@@ -49,7 +49,6 @@ const ProjectDetailPage = () => {
     }
   }, [isAuth, user])
 
-  // Fetch project details
   useEffect(() => {
     if (!state.checkingCompany) {
       loadProjectDetails()
@@ -168,12 +167,10 @@ const ProjectDetailPage = () => {
     loadProjectDetails()
   }, [loadProjectDetails])
 
-  // Loading states
   if (state.checkingCompany) {
     return <LoadingState message="Checking access..." />
   }
 
-  // HR without company registration
   if (isAuth && user?.role === 'Hr' && !state.hasCompany) {
     return <CompanyRegistrationRequired onNavigate={navigate} />
   }
@@ -186,21 +183,17 @@ const ProjectDetailPage = () => {
     return <ErrorState error={state.error} onNavigate={navigate} />
   }
 
-  const isProjectHead = isAuth && user?.createdBy === user._id
+  const isProjectHead = isAuth && user && state.project.createdBy && state.project.createdBy._id === user._id
   const canJoin = isAuth && !state.joined && !isProjectHead
 
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-12">
       <div className="max-w-4xl mx-auto">
-        {/* Navigation */}
         <NavButton onClick={() => navigate('/projects')} />
 
-        {/* Main Card */}
         <div className="bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden">
-          {/* Header */}
           <ProjectHeader project={state.project} />
 
-          {/* Content */}
           <div className="p-8 space-y-8">
             {state.successMessage && (
               <SuccessMessage message={state.successMessage} />
@@ -210,6 +203,15 @@ const ProjectDetailPage = () => {
             <SkillsSection skills={state.project.skills} />
             <RolesSection roles={state.project.rolesNeeded} />
             <RepositorySection url={state.project.githubUrl} />
+
+            {state.project.groupLink && (
+              <GroupCommunicationSection
+                project={state.project}
+                joined={state.joined}
+                isProjectHead={isProjectHead}
+                onJoinClick={() => toggleJoinModal(true)}
+              />
+            )}
 
             {isProjectHead && (
               <StatusManagement
@@ -265,7 +267,6 @@ const ProjectDetailPage = () => {
     </div>
   )
 }
-
 
 const LoadingState = ({ message }) => (
   <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -455,10 +456,84 @@ const RepositorySection = ({ url }) => {
   )
 }
 
+const GroupCommunicationSection = ({ project, joined, isProjectHead, onJoinClick }) => {
+  if (joined || isProjectHead) {
+    return (
+      <div className="border-t border-slate-200 pt-8">
+        <div className="flex items-center gap-3 mb-6">
+          <MessageCircle size={24} className="text-slate-900" />
+          <h2 className="text-2xl font-bold text-slate-900">Team Communication</h2>
+        </div>
+
+        <div className="bg-gradient-to-r from-green-50 to-white rounded-xl border border-green-200 p-6">
+          <div className="flex items-start gap-4">
+            <div className="flex-1">
+              <p className="text-sm font-medium text-slate-600 mb-2">
+                Connected on <span className="capitalize font-semibold text-slate-900">
+                  {project.groupType || 'WhatsApp'}
+                </span>
+              </p>
+              <p className="text-slate-600 text-sm mb-4">
+                Join the team group to discuss project details and collaborate with team members
+              </p>
+            </div>
+
+            <a
+              href={project.groupLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-semibold text-sm whitespace-nowrap flex items-center gap-2"
+            >
+              <MessageCircle size={18} />
+              Open Group
+            </a>
+          </div>
+
+          <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
+            <p className="text-xs text-green-700">
+              ✅ You are a member of this project and can access the team communication group
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="border-t border-slate-200 pt-8">
+      <div className="bg-slate-50 rounded-xl border border-slate-200 p-6">
+        <div className="flex items-start gap-4">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              <Lock size={18} className="text-slate-600" />
+              <p className="text-sm font-semibold text-slate-900">
+                Team Communication Group (Locked)
+              </p>
+            </div>
+            <p className="text-slate-600 text-sm mb-4">
+              The project head has set up a <span className="font-semibold capitalize">{project.groupType}</span> group for team communication. 
+              Send a join request and wait for approval to access the group link.
+            </p>
+          </div>
+        </div>
+
+        <button
+          onClick={onJoinClick}
+          className="w-full px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold text-sm"
+        >
+          Send Join Request to Access
+        </button>
+      </div>
+    </div>
+  )
+}
+
 const StatusManagement = ({ project, loading, error, onStatusChange }) => (
   <div className="border-t border-slate-200 pt-8">
     <div className="p-6 bg-gradient-to-r from-blue-50 to-slate-50 rounded-xl border border-blue-200">
-      <h3 className="text-lg font-bold text-slate-900 mb-4">Project Status</h3>
+      <h3 className="text-lg font-bold text-slate-900 mb-4">
+        Project Status
+      </h3>
 
       {error && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
@@ -542,14 +617,28 @@ const StatusButton = ({ loading, onClick, icon: Icon, label, className }) => (
 
 const TeamSection = ({ project, isProjectHead, onViewRequests }) => (
   <div className="border-t border-slate-200 pt-8">
-    <h2 className="text-2xl font-bold text-slate-900 mb-6">Team Members</h2>
+    <h2 className="text-2xl font-bold text-slate-900 mb-6">
+      Team Members
+    </h2>
 
     <div className="mb-6">
-      <p className="text-sm font-semibold text-slate-700 mb-3">Project Head</p>
+      <p className="text-sm font-semibold text-slate-700 mb-3">
+        Project Head
+      </p>
       {project.createdBy ? (
-        <TeamCard member={project.createdBy} role="Project Head" />
+        <div className="bg-gradient-to-r from-blue-50 to-slate-50 rounded-xl border border-blue-200 p-4">
+          <h3 className="font-semibold text-slate-900">
+            {project.createdBy.name}
+          </h3>
+          <p className="text-slate-600 text-sm">
+            {project.createdBy.email}
+          </p>
+          <span className="inline-block mt-2 px-3 py-1 bg-blue-100 text-blue-700 rounded text-xs font-semibold">
+            Project Head
+          </span>
+        </div>
       ) : (
-        <p className="text-slate-600">Loading...</p>
+        <div className="text-slate-600">Loading...</div>
       )}
     </div>
 
@@ -567,35 +656,44 @@ const TeamSection = ({ project, isProjectHead, onViewRequests }) => (
 
     {project.members.length > 0 && (
       <div>
-        <p className="text-sm font-semibold text-slate-700 mb-3">Team Members ({project.members.length})</p>
+        <p className="text-sm font-semibold text-slate-700 mb-3">
+          Team Members ({project.members.length})
+        </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {project.members.map(member => (
-            <TeamCard key={member._id || member} member={member} />
+          {project.members.map((member) => (
+            <div
+              key={member._id || member}
+              className="bg-gradient-to-r from-slate-50 to-white rounded-xl border border-slate-200 p-4"
+            >
+              <h3 className="font-semibold text-slate-900">
+                {typeof member === 'string'
+                  ? 'Member'
+                  : member.name || 'Loading...'}
+              </h3>
+              {typeof member !== 'string' && (
+                <p className="text-slate-600 text-sm">
+                  {member.email}
+                </p>
+              )}
+            </div>
           ))}
         </div>
       </div>
     )}
 
     {project.members.length === 0 && (
-      <p className="text-slate-600">No team members yet. Be the first to join!</p>
+      <p className="text-slate-600">
+        No team members yet. Be the first to join!
+      </p>
     )}
-  </div>
-)
-
-const TeamCard = ({ member, role }) => (
-  <div className={`rounded-xl border p-4 ${role === 'Project Head' ? 'bg-gradient-to-r from-blue-50 to-slate-50 border-blue-200' : 'bg-gradient-to-r from-slate-50 to-white border-slate-200'}`}>
-    <h3 className="font-semibold text-slate-900">
-      {typeof member === 'string' ? 'Member' : member.name || 'Loading...'}
-    </h3>
-    {typeof member !== 'string' && <p className="text-slate-600 text-sm">{member.email}</p>}
-    {role && <span className="inline-block mt-2 px-3 py-1 bg-blue-100 text-blue-700 rounded text-xs font-semibold">{role}</span>}
   </div>
 )
 
 const RecruitingNotice = () => (
   <div className="border-t border-slate-200 pt-8 bg-blue-50 rounded-xl p-6 border border-blue-200">
-    <p className="text-slate-700">
-      This project is actively recruiting. Send a join request to express your interest!
+    <p className="text-slate-700 mb-4">
+      This project is actively recruiting. Send a join request to
+      express your interest!
     </p>
   </div>
 )
@@ -603,18 +701,36 @@ const RecruitingNotice = () => (
 const ProjectFooter = ({ isProjectHead, joined, isAuth, canJoin, project, onEdit, onDelete, onJoin }) => (
   <div className="border-t border-slate-200 px-8 py-6 bg-slate-50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
     <div>
-      {isProjectHead && <p className="text-sm text-slate-600"><span className="font-semibold text-blue-600">You are the project head</span></p>}
-      {joined && !isProjectHead && <p className="text-sm text-slate-600"><span className="font-semibold text-green-600">✓ You are a team member</span></p>}
+      {isProjectHead && (
+        <p className="text-sm text-slate-600">
+          <span className="font-semibold text-blue-600">
+            You are the project head
+          </span>
+        </p>
+      )}
+      {joined && !isProjectHead && (
+        <p className="text-sm text-slate-600">
+          <span className="font-semibold text-green-600">
+            ✓ You are a team member
+          </span>
+        </p>
+      )}
     </div>
 
     <div className="flex flex-wrap gap-3 w-full sm:w-auto">
       {isProjectHead && (
         <>
-          <button onClick={onEdit} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold text-sm">
+          <button
+            onClick={onEdit}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold text-sm"
+          >
             <Edit2 size={16} />
             Edit
           </button>
-          <button onClick={onDelete} className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-semibold text-sm">
+          <button
+            onClick={onDelete}
+            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-semibold text-sm"
+          >
             <Trash2 size={16} />
             Delete
           </button>
@@ -622,14 +738,20 @@ const ProjectFooter = ({ isProjectHead, joined, isAuth, canJoin, project, onEdit
       )}
 
       {canJoin && project.status === 'recruiting' && (
-        <button onClick={onJoin} className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-semibold text-sm">
+        <button
+          onClick={onJoin}
+          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-semibold text-sm"
+        >
           <MessageCircle size={16} />
           Send Request
         </button>
       )}
 
       {!isAuth && (
-        <Link to="/login" className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold text-sm">
+        <Link
+          to="/login"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold text-sm"
+        >
           Login to Join
         </Link>
       )}
@@ -642,7 +764,11 @@ const DeleteConfirmationModal = ({ project, isDeleting, onConfirm, onCancel }) =
     <div className="bg-white rounded-xl shadow-xl max-w-sm w-full">
       <div className="flex items-center justify-between p-6 border-b border-slate-200">
         <h2 className="text-xl font-bold text-slate-900">Delete Project</h2>
-        <button onClick={onCancel} disabled={isDeleting} className="p-1 hover:bg-slate-100 rounded-lg transition disabled:opacity-50">
+        <button
+          onClick={onCancel}
+          disabled={isDeleting}
+          className="p-1 hover:bg-slate-100 rounded-lg transition disabled:opacity-50"
+        >
           <X size={20} />
         </button>
       </div>
@@ -652,15 +778,33 @@ const DeleteConfirmationModal = ({ project, isDeleting, onConfirm, onCancel }) =
           Are you sure you want to delete <span className="font-bold">"{project.title}"</span>?
         </p>
         <p className="text-sm text-slate-600 mb-6">
-          This action cannot be undone.
+          This action cannot be undone. All project data, team members, and requests will be permanently deleted.
         </p>
 
         <div className="flex gap-3">
-          <button onClick={onCancel} disabled={isDeleting} className="flex-1 px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-100 transition font-semibold disabled:opacity-50">
+          <button
+            onClick={onCancel}
+            disabled={isDeleting}
+            className="flex-1 px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-100 transition font-semibold disabled:opacity-50"
+          >
             Cancel
           </button>
-          <button onClick={onConfirm} disabled={isDeleting} className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-semibold flex items-center justify-center gap-2 disabled:opacity-50">
-            {isDeleting ? <><Loader size={16} className="animate-spin" />Deleting...</> : <><Trash2 size={16} />Delete</>}
+          <button
+            onClick={onConfirm}
+            disabled={isDeleting}
+            className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
+          >
+            {isDeleting ? (
+              <>
+                <Loader size={16} className="animate-spin" />
+                Deleting...
+              </>
+            ) : (
+              <>
+                <Trash2 size={16} />
+                Delete
+              </>
+            )}
           </button>
         </div>
       </div>
